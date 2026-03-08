@@ -189,12 +189,29 @@ pm2 startup
 
 ## Connecting from LobsterBoard
 
-In LobsterBoard, add a **Remote Server** widget and configure:
+1. Open LobsterBoard and click **🖥️ Servers** in the header
+2. Fill in the form:
+   - **Name**: A friendly name (e.g., "Production VPS")
+   - **URL**: `http://YOUR_IP:9090` (must include `http://`)
+   - **API Key**: The key from `lobsterboard-agent init`
+3. Click **Test Connection** — should show ✓ Connected
+4. Click **Add Server**
 
-- **URL**: `http://your-server:9090`
-- **API Key**: Your agent's API key
+### Adding Widgets
 
-You can add multiple widgets for multiple servers.
+1. Add a widget (Uptime Monitor, CPU/Memory, Disk, Network, or Docker)
+2. Select the widget to open properties panel
+3. Choose your server from the **Server** dropdown
+4. Save and preview!
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Failed to parse URL" | Make sure URL starts with `http://` |
+| Connection timeout | Check firewall, ensure port 9090 is open |
+| 401 Unauthorized | Verify API key is correct |
+| Agent stops when terminal closes | Use `disown` after starting (see VPS Setup) |
 
 ## Security
 
