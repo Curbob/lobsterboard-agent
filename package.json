@@ -1,6 +1,6 @@
 {
   "name": "lobsterboard-agent",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Lightweight stats agent for remote LobsterBoard monitoring",
   "main": "lib/server.js",
   "bin": {

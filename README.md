@@ -64,6 +64,64 @@ sudo ufw allow 9090
 curl -H "X-API-Key: YOUR_KEY" http://YOUR_VPS_IP:9090/stats
 ```
 
+### Run as a Service (Auto-Start)
+
+Create a systemd service so the agent starts on boot and restarts on crash:
+
+```bash
+nano /etc/systemd/system/lobsterboard-agent.service
+```
+
+Paste:
+```ini
+[Unit]
+Description=LobsterBoard Agent
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/env lobsterboard-agent serve
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Save (`Ctrl+O`, `Enter`, `Ctrl+X`), then:
+
+```bash
+systemctl daemon-reload
+systemctl enable lobsterboard-agent
+systemctl start lobsterboard-agent
+systemctl status lobsterboard-agent
+```
+
+### Docker OpenClaw Setup
+
+If OpenClaw runs in Docker, configure the agent to read from the correct paths:
+
+```bash
+nano ~/.lobsterboard-agent/config.json
+```
+
+Add these options:
+```json
+{
+  "openclawDataDir": "/path/to/.openclaw",
+  "openclawDockerContainer": "your-openclaw-container"
+}
+```
+
+**Find your values:**
+```bash
+# Find container name:
+docker ps | grep openclaw
+
+# Find data mount (look for .openclaw inside):
+docker inspect <container-name> | grep -A5 "Mounts"
+```
+
 ## Commands
 
 | Command | Description |
