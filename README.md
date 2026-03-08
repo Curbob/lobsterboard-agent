@@ -7,6 +7,7 @@ A lightweight stats agent for remote [LobsterBoard](https://github.com/Curbob/Lo
 - **System stats** — CPU, memory, disk, network, uptime
 - **Docker stats** — Container list and status (optional)
 - **OpenClaw stats** — Cron jobs, sessions, gateway status (optional)
+- **AI usage stats** — Track Claude, Codex, Copilot, Cursor, Gemini, and more (optional)
 - **End-to-end encryption** — ECDH key exchange + AES-256-GCM (automatic)
 - **API key auth** — Secure access to your server stats
 - **Lightweight** — Minimal footprint, runs anywhere Node runs
@@ -146,6 +147,10 @@ curl -H "X-API-Key: sk_your_key_here" http://your-server:9090/stats
     "gateway": { "running": true },
     "cron": { "total": 5, "enabled": 4 },
     "sessions": { "total": 12, "recent24h": 3 }
+  },
+  "aiUsage": {
+    "providers": [...],
+    "timestamp": "2026-03-07T12:00:00.000Z"
   }
 }
 ```
@@ -161,8 +166,78 @@ Config is stored in `~/.lobsterboard-agent/config.json`:
   "host": "0.0.0.0",
   "serverName": "my-vps",
   "enableDocker": true,
-  "enableOpenClaw": true
+  "enableOpenClaw": true,
+  "enableAiUsage": true
 }
+```
+
+## AI Usage Tracking
+
+When `enableAiUsage` is true (default), the agent reports usage metrics from AI coding tools installed on the server.
+
+### Supported Providers
+
+| Provider | Detection | What's Tracked |
+|----------|-----------|----------------|
+| Claude Code | `~/.claude/.credentials.json` or Keychain | Session, weekly, Opus limits |
+| Codex CLI | `~/.config/codex/auth.json` | Session, weekly, code reviews |
+| GitHub Copilot | `gh` CLI Keychain | Premium, chat, completions |
+| Cursor | SQLite DB | Total, auto, API usage |
+| Gemini CLI | `~/.gemini/oauth_creds.json` | Per-model quotas |
+| Amp Code | `~/.local/share/amp/secrets.json` | Free tier, credits |
+| Factory/Droid | `~/.factory/auth.json` | Standard, premium |
+| Kimi Code | `~/.kimi/credentials/` | Session limits |
+| JetBrains AI | IDE config XML | Quota usage |
+| MiniMax | `MINIMAX_API_KEY` env | Session |
+| Z.ai | `ZAI_API_KEY` env | Session, weekly |
+| Antigravity | `antigravity-usage` config | Per-model quotas |
+
+### How It Works
+
+The agent reads credentials from standard CLI config paths and queries each provider's usage API. Results are cached for 5 minutes to avoid rate limits.
+
+**No credentials leave your server** — the agent fetches directly from provider APIs using locally-stored tokens.
+
+### Example Response
+
+```json
+{
+  "aiUsage": {
+    "providers": [
+      {
+        "provider": "claude",
+        "name": "Claude Code",
+        "icon": "🟣",
+        "plan": "max",
+        "metrics": [
+          { "label": "Session (5h)", "used": 25.3, "limit": 100, "format": "percent" },
+          { "label": "Weekly", "used": 12.1, "limit": 100, "format": "percent" }
+        ]
+      },
+      {
+        "provider": "codex",
+        "name": "Codex CLI",
+        "icon": "🟢",
+        "plan": "plus",
+        "metrics": [
+          { "label": "Session (5h)", "used": 8.5, "limit": 100, "format": "percent" }
+        ]
+      }
+    ],
+    "timestamp": "2026-03-08T12:00:00.000Z"
+  }
+}
+```
+
+### Disabling AI Usage
+
+To disable AI usage tracking:
+
+```bash
+# Edit config
+nano ~/.lobsterboard-agent/config.json
+# Set: "enableAiUsage": false
+# Restart the agent
 ```
 
 ## Run as Service

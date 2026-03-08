@@ -25,6 +25,7 @@ const DEFAULT_CONFIG = {
   host: '0.0.0.0',
   enableDocker: true,
   enableOpenClaw: true,
+  enableAiUsage: true,
   serverName: os.hostname(),
   // ECDH key pair for encrypted communication
   ecdhPublicKey: null,
@@ -154,6 +155,7 @@ const commands = {
     console.log('Server name:', config.serverName);
     console.log('Docker stats:', config.enableDocker ? 'enabled' : 'disabled');
     console.log('OpenClaw stats:', config.enableOpenClaw ? 'enabled' : 'disabled');
+    console.log('AI usage stats:', config.enableAiUsage ? 'enabled' : 'disabled');
   },
 
   help() {
