@@ -298,39 +298,6 @@ nano ~/.lobsterboard-agent/config.json
 # Restart the agent
 ```
 
-## Run as Service
-
-### systemd (Linux)
-
-```bash
-sudo cat > /etc/systemd/system/lobsterboard-agent.service << 'EOF'
-[Unit]
-Description=LobsterBoard Agent
-After=network.target
-
-[Service]
-Type=simple
-User=your-user
-ExecStart=/usr/bin/lobsterboard-agent serve
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl enable lobsterboard-agent
-sudo systemctl start lobsterboard-agent
-```
-
-### pm2
-
-```bash
-pm2 start lobsterboard-agent -- serve
-pm2 save
-pm2 startup
-```
-
 ## Connecting from LobsterBoard
 
 1. Open LobsterBoard and click **🖥️ Servers** in the header
