@@ -26,6 +26,11 @@ const DEFAULT_CONFIG = {
   enableDocker: true,
   enableOpenClaw: true,
   serverName: os.hostname(),
+  // ECDH key pair for encrypted communication
+  ecdhPublicKey: null,
+  ecdhPrivateKey: null,
+  // Connected clients with their shared secrets
+  clients: {},
 };
 
 // Ensure config directory exists
@@ -72,11 +77,20 @@ const commands = {
     }
     
     config.apiKey = generateApiKey();
+    
+    // Generate ECDH key pair for encrypted communication
+    const { generateKeyPair } = require('../lib/crypto.js');
+    const keys = generateKeyPair();
+    config.ecdhPublicKey = keys.publicKey;
+    config.ecdhPrivateKey = keys.privateKey;
+    config.clients = {};
+    
     saveConfig(config);
     
     console.log('✅ LobsterBoard Agent initialized!\n');
     console.log('Your API key (save this!):\n');
     console.log(`   ${config.apiKey}\n`);
+    console.log('🔐 Encryption keys generated (ECDH P-256)');
     console.log('Config saved to:', CONFIG_FILE);
     console.log('\nStart the agent with:');
     console.log('   lobsterboard-agent serve');
@@ -99,6 +113,14 @@ const commands = {
     const config = loadConfig();
     const oldKey = config.apiKey;
     config.apiKey = generateApiKey();
+    
+    // Also regenerate ECDH keys and clear clients (they'll need to re-handshake)
+    const { generateKeyPair } = require('../lib/crypto.js');
+    const keys = generateKeyPair();
+    config.ecdhPublicKey = keys.publicKey;
+    config.ecdhPrivateKey = keys.privateKey;
+    config.clients = {};
+    
     saveConfig(config);
     
     console.log('✅ API key rotated!\n');
@@ -106,7 +128,9 @@ const commands = {
       console.log('Old key (now invalid):', oldKey.slice(0, 10) + '...');
     }
     console.log('New key:', config.apiKey);
-    console.log('\nRestart the agent to apply.');
+    console.log('🔐 Encryption keys regenerated');
+    console.log('\nAll connected clients will need to reconnect.');
+    console.log('Restart the agent to apply.');
   },
 
   'show-key'() {
@@ -123,6 +147,8 @@ const commands = {
     console.log('LobsterBoard Agent Status\n');
     console.log('Config file:', CONFIG_FILE);
     console.log('API key:', config.apiKey ? config.apiKey.slice(0, 10) + '...' : '(not set)');
+    console.log('Encryption:', config.ecdhPublicKey ? '🔐 enabled (ECDH P-256 + AES-256-GCM)' : '⚠️ not configured');
+    console.log('Connected clients:', Object.keys(config.clients || {}).length);
     console.log('Port:', config.port);
     console.log('Host:', config.host);
     console.log('Server name:', config.serverName);

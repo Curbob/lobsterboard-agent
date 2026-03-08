@@ -7,6 +7,7 @@ A lightweight stats agent for remote [LobsterBoard](https://github.com/Curbob/Lo
 - **System stats** — CPU, memory, disk, network, uptime
 - **Docker stats** — Container list and status (optional)
 - **OpenClaw stats** — Cron jobs, sessions, gateway status (optional)
+- **End-to-end encryption** — ECDH key exchange + AES-256-GCM (automatic)
 - **API key auth** — Secure access to your server stats
 - **Lightweight** — Minimal footprint, runs anywhere Node runs
 - **Multi-server** — Monitor multiple servers from one LobsterBoard
@@ -86,8 +87,18 @@ All endpoints require the `X-API-Key` header.
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /stats` | Full system stats (JSON) |
+| `POST /handshake` | Key exchange for encrypted communication |
+| `GET /stats` | Full system stats (encrypted if handshaked) |
 | `GET /health` | Health check |
+
+### Encryption Flow
+
+1. Client sends `POST /handshake` with `{ clientId, publicKey }`
+2. Agent responds with its public key
+3. Both derive shared secret using ECDH
+4. Client sends `GET /stats` with `X-Client-ID` header
+5. Agent returns encrypted response: `{ encrypted: "base64..." }`
+6. Client decrypts using shared secret
 
 ### Example Request
 
@@ -215,10 +226,26 @@ pm2 startup
 
 ## Security
 
+### Encryption (v0.2.0+)
+
+All communication between LobsterBoard and the agent is **encrypted by default**:
+
+1. **Key Exchange** — When you add a server in LobsterBoard, it performs an ECDH handshake with the agent
+2. **Shared Secret** — Both sides derive a shared 256-bit key (never transmitted)
+3. **Encrypted Stats** — All `/stats` responses are encrypted with AES-256-GCM
+
+This means your server stats are protected even over plain HTTP. No extra setup required!
+
+**Note:** The API key is still sent in headers for authentication. For maximum security, you can also:
+- Run behind a reverse proxy with HTTPS
+- Use Tailscale/WireGuard for encrypted tunneling
+- Limit access by IP via firewall rules
+
+### Best Practices
+
 - Always use an API key (never disable it)
-- Consider running behind a reverse proxy with HTTPS
+- Rotate keys periodically with `lobsterboard-agent rotate-key` (this also regenerates encryption keys)
 - Use firewall rules to limit access by IP if possible
-- Rotate keys periodically with `lobsterboard-agent rotate-key`
 
 ## License
 
