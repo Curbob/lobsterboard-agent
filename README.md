@@ -24,6 +24,44 @@ lobsterboard-agent init
 lobsterboard-agent serve
 ```
 
+## VPS Setup (Ubuntu/Debian)
+
+SSH into your VPS and run:
+
+```bash
+# Install Node.js if not present
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Install the agent
+sudo npm install -g lobsterboard-agent
+
+# Initialize and save your API key
+lobsterboard-agent init
+
+# Start in background (survives logout)
+lobsterboard-agent serve > /tmp/agent.log 2>&1 &
+disown
+
+# Verify it's running
+curl -H "X-API-Key: YOUR_KEY" http://localhost:9090/health
+```
+
+### Open Firewall Port
+
+```bash
+# UFW (Ubuntu)
+sudo ufw allow 9090
+
+# Or via your VPS provider's firewall panel
+```
+
+### Test from Local Machine
+
+```bash
+curl -H "X-API-Key: YOUR_KEY" http://YOUR_VPS_IP:9090/stats
+```
+
 ## Commands
 
 | Command | Description |
