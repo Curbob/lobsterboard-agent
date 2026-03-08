@@ -1,0 +1,32 @@
+{
+  "name": "lobsterboard-agent",
+  "version": "0.1.0",
+  "description": "Lightweight stats agent for remote LobsterBoard monitoring",
+  "main": "lib/server.js",
+  "bin": {
+    "lobsterboard-agent": "./bin/agent.js"
+  },
+  "scripts": {
+    "start": "node bin/agent.js serve",
+    "test": "node --test"
+  },
+  "keywords": [
+    "lobsterboard",
+    "monitoring",
+    "stats",
+    "agent",
+    "openclaw"
+  ],
+  "author": "Curbob",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Curbob/lobsterboard-agent.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "systeminformation": "^5.21.0"
+  }
+}
